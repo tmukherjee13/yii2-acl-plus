@@ -1,0 +1,21 @@
+{
+    "name": "tmukherjee13/yii2-acl-plus",
+    "description": "Control access level of users using rbac",
+    "type": "yii2-extension",
+    "keywords": ["yii2","extension"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tarun M",
+            "email": "tmukherjee13@gmail.com"
+        }
+    ],
+    "require": {
+        "yiisoft/yii2": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "tmukherjee13\\": ""
+        }
+    }
+}
