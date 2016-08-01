@@ -28,4 +28,4 @@ Usage
 Once the extension is installed, simply use it in your code by  :
 
 ```php
-<?= \tmukherjee13\AutoloadExample::widget(); ?>```
+<?= \tmukherjee13\aclplus\AutoloadExample::widget(); ?>```

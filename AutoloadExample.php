@@ -1,6 +1,6 @@
 <?php
 
-namespace tmukherjee13;
+namespace tmukherjee13\aclplus;
 
 /**
  * This is just an example.
