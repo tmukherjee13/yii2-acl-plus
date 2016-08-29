@@ -16,7 +16,7 @@ class m140602_111327_create_menu_table extends \yii\db\Migration
      */
     public function up()
     {
-        $menuTable = Configs::instance()->menuTable;
+        $menuTable = Config::instance()->menuTable;
         $tableOptions = null;
         if ($this->db->driverName === 'mysql') {
             $tableOptions = 'CHARACTER SET utf8 COLLATE utf8_general_ci ENGINE=InnoDB';
@@ -38,6 +38,6 @@ class m140602_111327_create_menu_table extends \yii\db\Migration
      */
     public function down()
     {
-        $this->dropTable(Configs::instance()->menuTable);
+        $this->dropTable(Config::instance()->menuTable);
     }
 }
