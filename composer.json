@@ -13,7 +13,7 @@
     },
     "autoload": {
         "psr-4": {
-            "tmukherjee13\\aclplus\\": ""
+            "tmukherjee13\\aclplus\\": "src"
         }
     },
     "repositories": [{
