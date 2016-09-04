@@ -16,6 +16,9 @@
             "tmukherjee13\\aclplus\\": "src"
         }
     },
+    "extra": {
+        "bootstrap": "tmukherjee13\\aclplus\\ModuleBootstrap"
+    },
     "repositories": [{
         "type": "git",
         "url": "https://github.com/tmukherjee13/yii2-acl-plus.git"
