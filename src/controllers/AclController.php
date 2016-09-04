@@ -1,102 +1,164 @@
 <?php
+
 namespace tmukherjee13\aclplus\controllers;
 
+use backend\modules\acl\models\Acl;
+// use common\modules\user\models\User;
+use tmukherjee13\aclplus\models\UserSearch;
 use Yii;
+use yii\filters\VerbFilter;
+use yii\helpers\ArrayHelper;
 use yii\web\Controller;
+use yii\web\NotFoundHttpException;
 
+/**
+ * AclController implements the CRUD actions for Acl model.
+ */
 class AclController extends Controller
 {
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            'verbs' => [
+                'class'   => VerbFilter::className(),
+                'actions' => [
+                    'delete' => ['POST'],
+                ],
+            ],
+        ];
+    }
 
+    /**
+     * Lists all Acl models.
+     * @return mixed
+     */
     public function actionIndex()
     {
-        die(__FILE__);
-    }
-    public function actionInit()
-    {
+        $searchModel  = new UserSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
-        if (!$this->confirm("Are you sure? It will re-create permissions tree.")) {
-            return self::EXIT_CODE_NORMAL;
-        }
-
-        $auth = Yii::$app->authManager;
-        $auth->removeAll();
-
-        // add "createPost" permission
-        $viewContent              = $auth->createPermission('viewContent');
-        $viewContent->description = 'Can view Contents';
-        $auth->add($viewContent);
-
-        // add "createContent" permission
-        $createContent              = $auth->createPermission('createContent');
-        $createContent->description = 'Can create Contents';
-        $auth->add($createContent);
-
-        // add "createPost" permission
-        $updateContent              = $auth->createPermission('updateContent');
-        $updateContent->description = 'Can update Contents';
-        $auth->add($updateContent);
-
-        // add "createContent" permission
-        $deleteContent              = $auth->createPermission('deleteContent');
-        $deleteContent->description = 'Can delete Contents';
-        $auth->add($deleteContent);
-
-        
-
-
-
-
-        // add "moderator" role and give this role the "viewContent" permission
-        $moderator              = $auth->createRole('moderator');
-        $moderator->description = 'Moderator Role';
-        $auth->add($moderator);
-        $auth->addChild($moderator, $viewContent);
-
-        // add "admin" role and give this role the "createContent" permission
-        // as well as the permissions of the "moderator" role
-        $admin              = $auth->createRole('admin');
-        $admin->description = 'Super Admin Role';
-        $auth->add($admin);
-        $auth->addChild($admin, $createContent);
-        $auth->addChild($admin, $viewContent);
-        $auth->addChild($admin, $updateContent);
-        $auth->addChild($admin, $deleteContent);
-        $auth->addChild($admin, $moderator);
-
-        // Assign roles to users. 1 and 2 are IDs returned by IdentityInterface::getId()
-        // usually implemented in your User model.
-        // $auth->assign($admin, 1);
+        return $this->render('index', [
+            'searchModel'  => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
     }
 
-    public function actionAssign($role, $username)
+    /**
+     * Displays a single Acl model.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionView($id)
     {
-        $user = User::find()->where(['username' => $username])->one();
-        if (!$user) {
-            throw new InvalidParamException("There is no user \"$username\".");
-        }
 
-        $auth = Yii::$app->authManager;
-        $role = $auth->getRole($role);
-        if (!$role) {
-            throw new InvalidParamException("There is no role \"$role\".");
-        }
+        // if (($model = Acl::findOne(['user_id' => $id])) !== null) {
+        // } else {
+        //     $menus = $this->prepareMenus();
+        // }
 
-        $auth->assign($role, $user->id);
+        $menus = $this->prepareMenus($id);
+        return $this->render('view', [
+            'menus' => $menus,
+        ]);
+
     }
 
-    public function actionRevoke($role, $username)
+    /**
+     * Assigns user to menus.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionAssign($id)
     {
-        $user = User::find()->where(['username' => $username])->one();
-        if (!$user) {
-            throw new InvalidParamException("There is no user \"$username\".");
+
+        $menus      = Yii::$app->getRequest()->post('menus', []);
+        $insertData = [];
+        foreach ($menus as $key => $menu) {
+            $insertData[] = [$id, $menu, 1];
         }
 
-        $auth = Yii::$app->authManager;
-        $role = $auth->getRole($role);
-        if (!$role) {
-            throw new InvalidParamException("There is no role \"$role\".");
+        Yii::$app->db->createCommand()
+            ->batchInsert(Acl::tableName(), ['user_id', 'menu_id', 'status'],
+                $insertData)
+            ->execute();
+
+        $model                           = new Acl();
+        Yii::$app->getResponse()->format = 'json';
+        return $this->prepareMenus($id);
+
+    }
+
+    /**
+     * Assigns user to menus.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionRemove($id)
+    {
+
+        $menus      = Yii::$app->getRequest()->post('menus', []);
+        $insertData = [];
+        // foreach ($menus as $key => $menu) {
+        //     $insertData[] = [$id, $menu, 1];
+        // }
+
+        Acl::deleteAll(['and', 'user_id = :user_id', ['in', 'menu_id', $menus]], [
+            ':user_id' => $id,
+        ]);
+
+        // Acl::deleteAll('user_id = :user_id AND menu_id IN (:menu_id)', [':user_id' => $id, ':menu_id' => ['8','9','10']]);
+
+        Yii::$app->getResponse()->format = 'json';
+        return $this->prepareMenus($id);
+
+    }
+
+    /**
+     * Finds the Acl model based on its primary key value.
+     * If the model is not found, a 404 HTTP exception will be thrown.
+     * @param integer $id
+     * @return Acl the loaded model
+     * @throws NotFoundHttpException if the model cannot be found
+     */
+    protected function findModel($id)
+    {
+        if (($model = Acl::findOne($id)) !== null) {
+            return $model;
+        } else {
+            throw new NotFoundHttpException('The requested page does not exist.');
+        }
+    }
+
+    protected function prepareMenus($id = null)
+    {
+        $exists   = [];
+        $assigned = [];
+        $allMenu  = Menu::find()->all();
+
+        if ($id !== null) {
+
+            $allAssigned = Acl::findAll(['user_id' => $id]);
+            foreach ($allAssigned as $_assigned) {
+                $exists[] = $_assigned->menu_id;
+            }
         }
 
-        $auth->revoke($role, $user->id);
+        $available = ArrayHelper::map($allMenu, 'id', 'name');
+
+        foreach ($available as $key => $name) {
+            if (in_array($key, $exists)) {
+                unset($available[$key]);
+                $assigned[$key] = $name;
+            }
+        }
+
+        $menus = [
+            'avaliable' => $available,
+            'assigned'  => $assigned,
+        ];
+        return $menus;
     }
 }

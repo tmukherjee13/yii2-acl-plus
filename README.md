@@ -29,3 +29,11 @@ Once the extension is installed, simply use it in your code by  :
 
 ```php
 <?= \tmukherjee13\aclplus\AutoloadExample::widget(); ?>```
+
+
+Menu (Optional)
+----
+If you want to use the menu module provided with the extension, you need to create the necessary tables by executing :
+```bash
+./yii migrate --migrationPath=@tmukherjee13/aclplus/migrations
+```

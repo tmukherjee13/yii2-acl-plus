@@ -23,13 +23,14 @@ class m140602_111327_create_menu_table extends \yii\db\Migration
         }
 
         $this->createTable($menuTable, [
-            'id' => $this->primaryKey(),
-            'name' => $this->string(128)->notNull(),
-            'parent' => $this->integer(),
-            'route' => $this->string(),
-            'order' => $this->integer(),
-            'data' => $this->binary(),
-            "FOREIGN KEY ([[parent]]) REFERENCES {$menuTable}([[id]]) ON DELETE SET NULL ON UPDATE CASCADE",
+            'id' => $this->primaryKey()->unsigned(),
+            'name' => $this->char(45)->notNull(),
+            'route' => $this->char(100),
+            'parent' => $this->integer()->defaultValue(0),
+            'order' => $this->integer(2),
+            'data' => $this->text(),
+            'icon' => $this->string(20),
+            'status' => $this->boolean()->defaultValue(1)
         ], $tableOptions);
     }
 
