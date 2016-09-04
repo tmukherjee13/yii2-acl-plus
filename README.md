@@ -33,4 +33,5 @@ Menu (Optional)
 If you want to use the menu module provided with the extension, you need to create the necessary tables by executing :
 
 ```php
-./yii migrate --migrationPath=@tmukherjee13/aclplus/migrations```
+./yii migrate --migrationPath=@tmukherjee13/aclplus/migrations
+```
